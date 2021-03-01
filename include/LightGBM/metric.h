@@ -127,13 +127,14 @@ class DCGCalculator {
   */
   inline static double GetDiscount(data_size_t k) { return discount_[k]; }
 
+  /*! \brief max position for which we support DCG calculation */
+  static const data_size_t kMaxPosition;
+
  private:
   /*! \brief store gains for different label */
   static std::vector<double> label_gain_;
   /*! \brief store discount score for different position */
   static std::vector<double> discount_;
-  /*! \brief max position for eval */
-  static const data_size_t kMaxPosition;
 };
 
 

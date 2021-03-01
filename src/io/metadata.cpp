@@ -3,6 +3,7 @@
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
 #include <LightGBM/dataset.h>
+#include <LightGBM/metric.h>
 #include <LightGBM/utils/common.h>
 
 #include <string>
@@ -143,21 +144,24 @@ void Metadata::CheckOrPartition(data_size_t num_all_data, const std::vector<data
     if (!queries_.empty()) {
       // need convert query_id to boundaries
       std::vector<data_size_t> tmp_buffer;
-      data_size_t last_qid = -1;
-      data_size_t cur_cnt = 0;
-      for (data_size_t i = 0; i < num_data_; ++i) {
-        if (last_qid != queries_[i]) {
-          if (cur_cnt > 0) {
+      for (data_size_t i = 0, cur_cnt = 0, last_qid = -1; i <= num_data_; ++i) {
+        if (i >= num_data_ || last_qid != queries_[i]) {
+          if (i > 0) {
+            if (cur_cnt > DCGCalculator::kMaxPosition) {
+              Log::Fatal("Number of rows %i exceeds upper limit of %i for a query", static_cast<int>(cur_cnt), static_cast<int>(DCGCalculator::kMaxPosition));
+            }
             tmp_buffer.push_back(cur_cnt);
           }
           cur_cnt = 0;
-          last_qid = queries_[i];
+          last_qid = (i < num_data_ ? queries_[i] : -1);
         }
         ++cur_cnt;
       }
-      tmp_buffer.push_back(cur_cnt);
-      query_boundaries_ = std::vector<data_size_t>(tmp_buffer.size() + 1);
+
       num_queries_ = static_cast<data_size_t>(tmp_buffer.size());
+      Log::Debug("Average number of rows per query: %f", static_cast<double>(num_data_) / num_queries_);
+
+      query_boundaries_ = std::vector<data_size_t>(static_cast<size_t>(num_queries_) + 1);
       query_boundaries_[0] = 0;
       for (size_t i = 0; i < tmp_buffer.size(); ++i) {
         query_boundaries_[i + 1] = query_boundaries_[i] + tmp_buffer[i];
