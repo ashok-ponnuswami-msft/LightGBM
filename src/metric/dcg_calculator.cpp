@@ -153,14 +153,19 @@ void DCGCalculator::CalDCG(const std::vector<data_size_t>& ks, const label_t* la
 }
 
 void DCGCalculator::CheckMetadata(const Metadata& metadata, data_size_t num_queries) {
+  if (num_queries <= 0) {
+    Log::Fatal("Expected at least one query");
+  }
+
   const data_size_t* query_boundaries = metadata.query_boundaries();
-  if (num_queries > 0 && query_boundaries != nullptr) {
-    for (data_size_t i = 0; i < num_queries; i++)
-    {
-      data_size_t num_rows = query_boundaries[i + 1] - query_boundaries[i];
-      if (num_rows > kMaxPosition) {
-        Log::Fatal("Number of rows %i exceeds upper limit of %i for a query", static_cast<int>(num_rows), static_cast<int>(kMaxPosition));
-      }
+  if (query_boundaries == nullptr) {
+    Log::Fatal("Expected query boundaries to have been loaded");
+  }
+
+  for (data_size_t i = 0; i < num_queries; i++) {
+    data_size_t num_rows = query_boundaries[i + 1] - query_boundaries[i];
+    if (num_rows > kMaxPosition) {
+      Log::Fatal("Number of rows %i exceeds upper limit of %i for a query", static_cast<int>(num_rows), static_cast<int>(kMaxPosition));
     }
   }
 }
