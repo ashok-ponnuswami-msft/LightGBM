@@ -109,7 +109,7 @@ class DCGCalculator {
   * \param metadata Metadata
   * \param num_queries Number of queries
   */
-  static void DCGCalculator::CheckMetadata(const Metadata& metadata, data_size_t num_queries);
+  static void CheckMetadata(const Metadata& metadata, data_size_t num_queries);
 
   /*!
   * \brief Check the label range for NDCG and lambdarank
